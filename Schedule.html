@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pickleball Tournament Manager</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Montserrat', sans-serif;
+            background-color: #f0fdf4;
+            background-image: linear-gradient(to bottom right, #f0fdf4, #dbeafe);
+            min-height: 100vh;
+        }
+        .glass-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.1);
+        }
+        .header-bg {
+            background: #0f172a;
+            color: #fde047;
+        }
+        input[type="number"]::-webkit-inner-spin-button, 
+        input[type="number"]::-webkit-outer-spin-button { 
+            -webkit-appearance: none; 
+            margin: 0; 
+        }
+    </style>
+</head>
+<body class="p-4 md:p-8 text-slate-800">
+
+    <div class="max-w-6xl mx-auto space-y-6">
+        
+        <!-- Header -->
+        <header class="header-bg rounded-2xl p-6 text-center shadow-xl relative overflow-hidden">
+            <div class="absolute -top-10 -right-10 w-32 h-32 bg-yellow-400 rounded-full opacity-20 blur-2xl"></div>
+            <div class="absolute -bottom-10 -left-10 w-32 h-32 bg-blue-500 rounded-full opacity-20 blur-2xl"></div>
+            
+            <h1 class="text-3xl md:text-5xl font-extrabold uppercase tracking-wider mb-2 z-10 relative text-yellow-300">
+                Pickleball
+            </h1>
+            <h2 class="text-xl md:text-2xl font-bold text-white uppercase z-10 relative tracking-widest">
+                Giao lưu - Thi đấu
+            </h2>
+            <p class="text-blue-200 mt-2 font-semibold">Đoàn kết - Vui vẻ - Thể thao</p>
+        </header>
+
+        <!-- Main Content -->
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+            
+            <!-- Left Column: Settings & Matches -->
+            <div class="lg:col-span-7 space-y-6">
+                
+                <!-- Court Fee Setting -->
+                <div class="glass-card rounded-2xl p-6 shadow-lg">
+                    <h3 class="text-xl font-bold text-slate-800 mb-4 flex items-center gap-2">
+                        <svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                        Tổng Tiền Sân (VNĐ)
+                    </h3>
+                    <input type="number" id="totalFeeInput" class="w-full text-2xl font-bold p-4 bg-slate-50 border-2 border-slate-200 rounded-xl focus:border-blue-500 focus:ring-4 focus:ring-blue-100 outline-none transition-all" placeholder="Ví dụ: 500000">
+                </div>
+
+                <!-- Matches List -->
+                <div class="glass-card rounded-2xl p-6 shadow-lg">
+                    <div class="flex justify-between items-end mb-6">
+                        <div>
+                            <h3 class="text-xl font-bold text-slate-800 flex items-center gap-2">
+                                <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path></svg>
+                                Lịch Thi Đấu (9 Trận)
+                            </h3>
+                            <p class="text-sm text-slate-500 font-medium mt-1">Luật: Chạm 11 không cần cách 2</p>
+                        </div>
+                    </div>
+                    
+                    <div id="matchesContainer" class="space-y-4">
+                        <!-- Matches will be generated here -->
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Right Column: Leaderboard -->
+            <div class="lg:col-span-5 space-y-6">
+                
+                <!-- Rules Summary -->
+                <div class="bg-blue-600 rounded-2xl p-6 text-white shadow-lg relative overflow-hidden">
+                    <div class="absolute -right-4 -bottom-4 w-24 h-24 bg-white opacity-10 rounded-full"></div>
+                    <h3 class="text-lg font-bold mb-3 flex items-center gap-2">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path></svg>
+                        Thể Thức & Tiền Sân
+                    </h3>
+                    <ul class="text-sm space-y-2 text-blue-100 font-medium">
+                        <li>• 6 người, mỗi người đánh 6 trận.</li>
+                        <li>• Xếp hạng theo: <strong class="text-yellow-300">Thắng/Thua</strong> &rarr; <strong class="text-yellow-300">Hệ số điểm</strong>.</li>
+                        <li>• Hạng 1: <span class="bg-green-500 text-white px-2 py-0.5 rounded text-xs font-bold">FREE (0%)</span></li>
+                        <li>• Hạng 2-6: Lần lượt chịu 10% - 15% - 20% - 25% - 30% tiền sân.</li>
+                    </ul>
+                </div>
+
+                <!-- Leaderboard Table -->
+                <div class="glass-card rounded-2xl p-6 shadow-lg sticky top-6">
+                    <h3 class="text-xl font-bold text-slate-800 mb-4 flex items-center gap-2">
+                        <svg class="w-6 h-6 text-yellow-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path></svg>
+                        Bảng Xếp Hạng
+                    </h3>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left border-collapse">
+                            <thead>
+                                <tr class="text-xs uppercase text-slate-400 border-b-2 border-slate-100">
+                                    <th class="pb-3 font-bold pl-2">Hạng</th>
+                                    <th class="pb-3 font-bold">Người chơi</th>
+                                    <th class="pb-3 font-bold text-center">T - B</th>
+                                    <th class="pb-3 font-bold text-center">Hệ số</th>
+                                    <th class="pb-3 font-bold text-right pr-2">Tiền sân</th>
+                                </tr>
+                            </thead>
+                            <tbody id="leaderboardBody" class="divide-y divide-slate-100">
+                                <!-- Leaderboard generated via JS -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Data Structure
+        const players = ["Dương", "Đạt", "Minh", "Trung", "Khánh", "Phát"];
+        
+        const matches = [
+            { id: 1, team1: ["Dương", "Đạt"], team2: ["Minh", "Trung"], score1: "", score2: "" },
+            { id: 2, team1: ["Khánh", "Đạt"], team2: ["Phát", "Trung"], score1: "", score2: "" },
+            { id: 3, team1: ["Khánh", "Dương"], team2: ["Phát", "Minh"], score1: "", score2: "" },
+            { id: 4, team1: ["Dương", "Minh"], team2: ["Đạt", "Trung"], score1: "", score2: "" },
+            { id: 5, team1: ["Khánh", "Phát"], team2: ["Đạt", "Trung"], score1: "", score2: "" },
+            { id: 6, team1: ["Khánh", "Phát"], team2: ["Dương", "Minh"], score1: "", score2: "" },
+            { id: 7, team1: ["Dương", "Trung"], team2: ["Đạt", "Minh"], score1: "", score2: "" },
+            { id: 8, team1: ["Khánh", "Trung"], team2: ["Đạt", "Phát"], score1: "", score2: "" },
+            { id: 9, team1: ["Khánh", "Minh"], team2: ["Dương", "Phát"], score1: "", score2: "" },
+        ];
+
+        const feePercentages = [0, 0.10, 0.15, 0.20, 0.25, 0.30];
+        let totalFee = 0;
+
+        // Elements
+        const matchesContainer = document.getElementById('matchesContainer');
+        const leaderboardBody = document.getElementById('leaderboardBody');
+        const totalFeeInput = document.getElementById('totalFeeInput');
+
+        // Initialize Matches UI
+        function renderMatchesUI() {
+            matchesContainer.innerHTML = '';
+            matches.forEach((match, index) => {
+                const matchDiv = document.createElement('div');
+                matchDiv.className = 'bg-white border border-slate-200 rounded-xl p-4 flex flex-col md:flex-row md:items-center justify-between gap-4 transition-colors';
+                matchDiv.id = `match-card-${match.id}`;
+                
+                matchDiv.innerHTML = `
+                    <div class="flex items-center gap-3 w-full md:w-5/12">
+                        <span class="bg-blue-100 text-blue-700 font-bold text-xs px-2 py-1 rounded-md">#${match.id}</span>
+                        <span class="font-bold text-slate-700">${match.team1.join(" & ")}</span>
+                    </div>
+                    
+                    <div class="flex items-center justify-center gap-2 w-full md:w-2/12">
+                        <input type="number" data-match="${index}" data-team="1" class="score-input w-12 h-12 text-center text-xl font-bold bg-slate-50 border-2 border-slate-200 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none" value="${match.score1}">
+                        <span class="text-slate-400 font-bold">-</span>
+                        <input type="number" data-match="${index}" data-team="2" class="score-input w-12 h-12 text-center text-xl font-bold bg-slate-50 border-2 border-slate-200 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none" value="${match.score2}">
+                    </div>
+
+                    <div class="flex items-center justify-end gap-3 w-full md:w-5/12 text-right">
+                        <span class="font-bold text-slate-700">${match.team2.join(" & ")}</span>
+                    </div>
+                `;
+                matchesContainer.appendChild(matchDiv);
+            });
+
+            // Add Event Listeners for inputs
+            document.querySelectorAll('.score-input').forEach(input => {
+                input.addEventListener('input', (e) => {
+                    const matchIdx = parseInt(e.target.getAttribute('data-match'));
+                    const team = e.target.getAttribute('data-team');
+                    const value = e.target.value;
+                    
+                    if (team === '1') matches[matchIdx].score1 = value;
+                    else matches[matchIdx].score2 = value;
+                    
+                    updateMatchCardStyle(matchIdx);
+                    updateLeaderboard();
+                });
+            });
+        }
+
+        // Highlight completed matches
+        function updateMatchCardStyle(index) {
+            const m = matches[index];
+            const card = document.getElementById(`match-card-${m.id}`);
+            if (m.score1 !== "" && m.score2 !== "") {
+                card.classList.add('bg-blue-50', 'border-blue-200');
+                card.classList.remove('bg-white', 'border-slate-200');
+            } else {
+                card.classList.remove('bg-blue-50', 'border-blue-200');
+                card.classList.add('bg-white', 'border-slate-200');
+            }
+        }
+
+        // Calculate and Render Leaderboard
+        function updateLeaderboard() {
+            // Reset stats
+            const stats = {};
+            players.forEach(p => {
+                stats[p] = { name: p, wins: 0, losses: 0, pointsFor: 0, pointsAgainst: 0 };
+            });
+
+            // Calculate scores
+            matches.forEach(m => {
+                if (m.score1 !== "" && m.score2 !== "") {
+                    const s1 = parseInt(m.score1) || 0;
+                    const s2 = parseInt(m.score2) || 0;
+                    
+                    m.team1.forEach(p => {
+                        stats[p].pointsFor += s1;
+                        stats[p].pointsAgainst += s2;
+                        if (s1 > s2) stats[p].wins++;
+                        else if (s1 < s2) stats[p].losses++;
+                    });
+                    
+                    m.team2.forEach(p => {
+                        stats[p].pointsFor += s2;
+                        stats[p].pointsAgainst += s1;
+                        if (s2 > s1) stats[p].wins++;
+                        else if (s2 < s1) stats[p].losses++;
+                    });
+                }
+            });
+
+            // Calculate point difference and convert to array
+            const rankedPlayers = players.map(p => {
+                const s = stats[p];
+                return {
+                    ...s,
+                    pointDiff: s.pointsFor - s.pointsAgainst
+                };
+            });
+
+            // Sort: Wins -> Point Diff -> Name
+            rankedPlayers.sort((a, b) => {
+                if (b.wins !== a.wins) return b.wins - a.wins;
+                if (b.pointDiff !== a.pointDiff) return b.pointDiff - a.pointDiff;
+                return a.name.localeCompare(b.name);
+            });
+
+            // Render
+            leaderboardBody.innerHTML = '';
+            rankedPlayers.forEach((player, index) => {
+                const rank = index + 1;
+                const feePercent = feePercentages[index];
+                const feeAmount = totalFee * feePercent;
+                
+                // Rank Styling
+                let rankBadge = `<span class="inline-flex items-center justify-center w-6 h-6 rounded-full bg-slate-100 text-slate-500 font-bold text-xs">${rank}</span>`;
+                if (rank === 1) rankBadge = `<span class="inline-flex items-center justify-center w-6 h-6 rounded-full bg-yellow-400 text-yellow-900 font-bold text-xs shadow">1</span>`;
+                if (rank === 2) rankBadge = `<span class="inline-flex items-center justify-center w-6 h-6 rounded-full bg-slate-300 text-slate-700 font-bold text-xs shadow">2</span>`;
+                if (rank === 3) rankBadge = `<span class="inline-flex items-center justify-center w-6 h-6 rounded-full bg-orange-300 text-orange-800 font-bold text-xs shadow">3</span>`;
+
+                const tr = document.createElement('tr');
+                tr.className = "hover:bg-slate-50 transition-colors";
+                tr.innerHTML = `
+                    <td class="py-3 pl-2">${rankBadge}</td>
+                    <td class="py-3 font-bold text-slate-800">${player.name}</td>
+                    <td class="py-3 text-center font-semibold text-slate-600">${player.wins} - ${player.losses}</td>
+                    <td class="py-3 text-center">
+                        <span class="font-bold ${player.pointDiff > 0 ? 'text-green-600' : player.pointDiff < 0 ? 'text-red-500' : 'text-slate-500'}">
+                            ${player.pointDiff > 0 ? '+' : ''}${player.pointDiff}
+                        </span>
+                    </td>
+                    <td class="py-3 pr-2 text-right">
+                        <div class="font-bold text-slate-800">${feeAmount === 0 && rank === 1 ? 'FREE' : feeAmount.toLocaleString('vi-VN')}</div>
+                        <div class="text-[10px] font-semibold text-slate-400">${(feePercent * 100)}%</div>
+                    </td>
+                `;
+                leaderboardBody.appendChild(tr);
+            });
+        }
+
+        // Fee Input Listener
+        totalFeeInput.addEventListener('input', (e) => {
+            totalFee = parseInt(e.target.value) || 0;
+            updateLeaderboard();
+        });
+
+        // Init
+        renderMatchesUI();
+        updateLeaderboard();
+
+    </script>
+</body>
+</html>
