@@ -2,301 +2,571 @@
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pickleball Tournament Manager</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Pickleball Manager & Referee</title>
+    
+    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- React & ReactDOM -->
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    
+    <!-- Babel -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
     <style>
-        body {
-            font-family: 'Montserrat', sans-serif;
-            background-color: #f0fdf4;
-            background-image: linear-gradient(to bottom right, #f0fdf4, #dbeafe);
-            min-height: 100vh;
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&display=swap');
+        
+        body { font-family: 'Inter', sans-serif; background-color: #f8fafc; }
+        
+        @keyframes pulse-serve {
+            0%, 100% { transform: scale(1); filter: drop-shadow(0 0 4px rgba(16, 185, 129, 0.4)); }
+            50% { transform: scale(1.15); filter: drop-shadow(0 0 10px rgba(16, 185, 129, 0.8)); }
         }
-        .glass-card {
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.1);
-        }
-        .header-bg {
-            background: #0f172a;
-            color: #fde047;
-        }
-        input[type="number"]::-webkit-inner-spin-button, 
-        input[type="number"]::-webkit-outer-spin-button { 
-            -webkit-appearance: none; 
-            margin: 0; 
-        }
+        .serving-ball { display: inline-block; animation: pulse-serve 1.5s infinite; }
+        
+        .fade-in { animation: fadeIn 0.3s ease-in-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
     </style>
 </head>
-<body class="p-4 md:p-8 text-slate-800">
+<body>
+    <div id="root"></div>
 
-    <div class="max-w-6xl mx-auto space-y-6">
-        
-        <!-- Header -->
-        <header class="header-bg rounded-2xl p-6 text-center shadow-xl relative overflow-hidden">
-            <div class="absolute -top-10 -right-10 w-32 h-32 bg-yellow-400 rounded-full opacity-20 blur-2xl"></div>
-            <div class="absolute -bottom-10 -left-10 w-32 h-32 bg-blue-500 rounded-full opacity-20 blur-2xl"></div>
-            
-            <h1 class="text-3xl md:text-5xl font-extrabold uppercase tracking-wider mb-2 z-10 relative text-yellow-300">
-                Pickleball
-            </h1>
-            <h2 class="text-xl md:text-2xl font-bold text-white uppercase z-10 relative tracking-widest">
-                Giao lưu - Thi đấu
-            </h2>
-            <p class="text-blue-200 mt-2 font-semibold">Đoàn kết - Vui vẻ - Thể thao</p>
-        </header>
+    <script type="text/babel">
+        const { useState, useEffect } = React;
 
-        <!-- Main Content -->
-        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
-            
-            <!-- Left Column: Settings & Matches -->
-            <div class="lg:col-span-7 space-y-6">
-                
-                <!-- Court Fee Setting -->
-                <div class="glass-card rounded-2xl p-6 shadow-lg">
-                    <h3 class="text-xl font-bold text-slate-800 mb-4 flex items-center gap-2">
-                        <svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                        Tổng Tiền Sân (VNĐ)
-                    </h3>
-                    <input type="number" id="totalFeeInput" class="w-full text-2xl font-bold p-4 bg-slate-50 border-2 border-slate-200 rounded-xl focus:border-blue-500 focus:ring-4 focus:ring-blue-100 outline-none transition-all" placeholder="Ví dụ: 500000">
-                </div>
+        const defaultPlayers = ["Khánh", "Dương", "Đạt", "Phát", "Minh", "Trung"];
 
-                <!-- Matches List -->
-                <div class="glass-card rounded-2xl p-6 shadow-lg">
-                    <div class="flex justify-between items-end mb-6">
-                        <div>
-                            <h3 class="text-xl font-bold text-slate-800 flex items-center gap-2">
-                                <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path></svg>
-                                Lịch Thi Đấu (9 Trận)
-                            </h3>
-                            <p class="text-sm text-slate-500 font-medium mt-1">Luật: Chạm 11 không cần cách 2</p>
-                        </div>
-                    </div>
-                    
-                    <div id="matchesContainer" class="space-y-4">
-                        <!-- Matches will be generated here -->
-                    </div>
-                </div>
-
-            </div>
-
-            <!-- Right Column: Leaderboard -->
-            <div class="lg:col-span-5 space-y-6">
-                
-                <!-- Rules Summary -->
-                <div class="bg-blue-600 rounded-2xl p-6 text-white shadow-lg relative overflow-hidden">
-                    <div class="absolute -right-4 -bottom-4 w-24 h-24 bg-white opacity-10 rounded-full"></div>
-                    <h3 class="text-lg font-bold mb-3 flex items-center gap-2">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path></svg>
-                        Thể Thức & Tiền Sân
-                    </h3>
-                    <ul class="text-sm space-y-2 text-blue-100 font-medium">
-                        <li>• 6 người, mỗi người đánh 6 trận.</li>
-                        <li>• Xếp hạng theo: <strong class="text-yellow-300">Thắng/Thua</strong> &rarr; <strong class="text-yellow-300">Hệ số điểm</strong>.</li>
-                        <li>• Hạng 1: <span class="bg-green-500 text-white px-2 py-0.5 rounded text-xs font-bold">FREE (0%)</span></li>
-                        <li>• Hạng 2-6: Lần lượt chịu 10% - 15% - 20% - 25% - 30% tiền sân.</li>
-                    </ul>
-                </div>
-
-                <!-- Leaderboard Table -->
-                <div class="glass-card rounded-2xl p-6 shadow-lg sticky top-6">
-                    <h3 class="text-xl font-bold text-slate-800 mb-4 flex items-center gap-2">
-                        <svg class="w-6 h-6 text-yellow-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path></svg>
-                        Bảng Xếp Hạng
-                    </h3>
-                    <div class="overflow-x-auto">
-                        <table class="w-full text-left border-collapse">
-                            <thead>
-                                <tr class="text-xs uppercase text-slate-400 border-b-2 border-slate-100">
-                                    <th class="pb-3 font-bold pl-2">Hạng</th>
-                                    <th class="pb-3 font-bold">Người chơi</th>
-                                    <th class="pb-3 font-bold text-center">T - B</th>
-                                    <th class="pb-3 font-bold text-center">Hệ số</th>
-                                    <th class="pb-3 font-bold text-right pr-2">Tiền sân</th>
-                                </tr>
-                            </thead>
-                            <tbody id="leaderboardBody" class="divide-y divide-slate-100">
-                                <!-- Leaderboard generated via JS -->
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-
-            </div>
-        </div>
-    </div>
-
-    <script>
-        // Data Structure
-        const players = ["Dương", "Đạt", "Minh", "Trung", "Khánh", "Phát"];
-        
-        const matches = [
-            { id: 1, team1: ["Dương", "Đạt"], team2: ["Minh", "Trung"], score1: "", score2: "" },
-            { id: 2, team1: ["Khánh", "Đạt"], team2: ["Phát", "Trung"], score1: "", score2: "" },
-            { id: 3, team1: ["Khánh", "Dương"], team2: ["Phát", "Minh"], score1: "", score2: "" },
-            { id: 4, team1: ["Dương", "Minh"], team2: ["Đạt", "Trung"], score1: "", score2: "" },
-            { id: 5, team1: ["Khánh", "Phát"], team2: ["Đạt", "Trung"], score1: "", score2: "" },
-            { id: 6, team1: ["Khánh", "Phát"], team2: ["Dương", "Minh"], score1: "", score2: "" },
-            { id: 7, team1: ["Dương", "Trung"], team2: ["Đạt", "Minh"], score1: "", score2: "" },
-            { id: 8, team1: ["Khánh", "Trung"], team2: ["Đạt", "Phát"], score1: "", score2: "" },
-            { id: 9, team1: ["Khánh", "Minh"], team2: ["Dương", "Phát"], score1: "", score2: "" },
+        // Template chuẩn toán học 9 trận dựa trên Vị trí (Index 0-5) thay vì Tên
+        const templateIndices = [
+            { t1: [1, 2], t2: [4, 5] }, // Trận 1 
+            { t1: [0, 2], t2: [3, 5] }, // Trận 2
+            { t1: [0, 1], t2: [3, 4] }, // Trận 3
+            { t1: [1, 4], t2: [2, 5] }, // Trận 4
+            { t1: [3, 0], t2: [2, 5] }, // Trận 5
+            { t1: [3, 0], t2: [1, 4] }, // Trận 6
+            { t1: [1, 5], t2: [2, 4] }, // Trận 7
+            { t1: [0, 5], t2: [2, 3] }, // Trận 8
+            { t1: [0, 4], t2: [1, 3] }  // Trận 9
         ];
 
-        const feePercentages = [0, 0.10, 0.15, 0.20, 0.25, 0.30];
-        let totalFee = 0;
+        function App() {
+            // Danh sách tên gốc, liên kết trực tiếp với các ô input
+            const [players, setPlayers] = useState(defaultPlayers);
+            
+            // Bản đồ ánh xạ ngẫu nhiên (chứa các số từ 0 đến 5 đã xáo trộn)
+            const [playerMapping, setPlayerMapping] = useState([0, 1, 2, 3, 4, 5]);
+            
+            const [matchScores, setMatchScores] = useState({});
+            const [courtFee, setCourtFee] = useState(500000);
+            
+            const [refereeIndex, setRefereeIndex] = useState(null);
+            const [ref, setRef] = useState(null);
 
-        // Elements
-        const matchesContainer = document.getElementById('matchesContainer');
-        const leaderboardBody = document.getElementById('leaderboardBody');
-        const totalFeeInput = document.getElementById('totalFeeInput');
+            // Xáo trộn lịch lần đầu tiên khi load web
+            useEffect(() => {
+                handleReroll();
+            }, []);
 
-        // Initialize Matches UI
-        function renderMatchesUI() {
-            matchesContainer.innerHTML = '';
-            matches.forEach((match, index) => {
-                const matchDiv = document.createElement('div');
-                matchDiv.className = 'bg-white border border-slate-200 rounded-xl p-4 flex flex-col md:flex-row md:items-center justify-between gap-4 transition-colors';
-                matchDiv.id = `match-card-${match.id}`;
-                
-                matchDiv.innerHTML = `
-                    <div class="flex items-center gap-3 w-full md:w-5/12">
-                        <span class="bg-blue-100 text-blue-700 font-bold text-xs px-2 py-1 rounded-md">#${match.id}</span>
-                        <span class="font-bold text-slate-700">${match.team1.join(" & ")}</span>
-                    </div>
-                    
-                    <div class="flex items-center justify-center gap-2 w-full md:w-2/12">
-                        <input type="number" data-match="${index}" data-team="1" class="score-input w-12 h-12 text-center text-xl font-bold bg-slate-50 border-2 border-slate-200 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none" value="${match.score1}">
-                        <span class="text-slate-400 font-bold">-</span>
-                        <input type="number" data-match="${index}" data-team="2" class="score-input w-12 h-12 text-center text-xl font-bold bg-slate-50 border-2 border-slate-200 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none" value="${match.score2}">
-                    </div>
+            // Nút Tạo Lịch Mới: Chỉ cần xáo trộn lại bản đồ index, lịch sẽ tự động sinh mới
+            const handleReroll = () => {
+                const newMapping = [0, 1, 2, 3, 4, 5].sort(() => 0.5 - Math.random());
+                setPlayerMapping(newMapping);
+                setMatchScores({});
+                setRefereeIndex(null);
+                setRef(null);
+            };
 
-                    <div class="flex items-center justify-end gap-3 w-full md:w-5/12 text-right">
-                        <span class="font-bold text-slate-700">${match.team2.join(" & ")}</span>
-                    </div>
-                `;
-                matchesContainer.appendChild(matchDiv);
-            });
+            const updateScore = (matchIndex, team, score) => {
+                setMatchScores(prev => ({
+                    ...prev,
+                    [matchIndex]: {
+                        ...prev[matchIndex],
+                        [team]: Number(score)
+                    }
+                }));
+            };
 
-            // Add Event Listeners for inputs
-            document.querySelectorAll('.score-input').forEach(input => {
-                input.addEventListener('input', (e) => {
-                    const matchIdx = parseInt(e.target.getAttribute('data-match'));
-                    const team = e.target.getAttribute('data-team');
-                    const value = e.target.value;
-                    
-                    if (team === '1') matches[matchIdx].score1 = value;
-                    else matches[matchIdx].score2 = value;
-                    
-                    updateMatchCardStyle(matchIdx);
-                    updateLeaderboard();
+            const calculateLeaderboard = () => {
+                // Khởi tạo bảng thống kê dựa trên index 0-5
+                let stats = Array(6).fill(null).map((_, i) => ({ 
+                    id: i, 
+                    name: players[i] || `Người ${i + 1}`, 
+                    wins: 0, 
+                    losses: 0, 
+                    diff: 0 
+                }));
+
+                templateIndices.forEach((match, idx) => {
+                    const score = matchScores[idx];
+                    if (score && score.t1 !== undefined && score.t2 !== undefined && score.t1 !== score.t2) {
+                        const t1Wins = score.t1 > score.t2;
+                        const diff = Math.abs(score.t1 - score.t2);
+
+                        // Cập nhật cho đội 1
+                        match.t1.forEach(tempIdx => {
+                            const globalId = playerMapping[tempIdx];
+                            if (t1Wins) { stats[globalId].wins++; stats[globalId].diff += diff; } 
+                            else { stats[globalId].losses++; stats[globalId].diff -= diff; }
+                        });
+                        
+                        // Cập nhật cho đội 2
+                        match.t2.forEach(tempIdx => {
+                            const globalId = playerMapping[tempIdx];
+                            if (!t1Wins) { stats[globalId].wins++; stats[globalId].diff += diff; } 
+                            else { stats[globalId].losses++; stats[globalId].diff -= diff; }
+                        });
+                    }
                 });
-            });
-        }
 
-        // Highlight completed matches
-        function updateMatchCardStyle(index) {
-            const m = matches[index];
-            const card = document.getElementById(`match-card-${m.id}`);
-            if (m.score1 !== "" && m.score2 !== "") {
-                card.classList.add('bg-blue-50', 'border-blue-200');
-                card.classList.remove('bg-white', 'border-slate-200');
-            } else {
-                card.classList.remove('bg-blue-50', 'border-blue-200');
-                card.classList.add('bg-white', 'border-slate-200');
-            }
-        }
+                // Sắp xếp
+                let sorted = stats.sort((a, b) => {
+                    if (b.wins !== a.wins) return b.wins - a.wins;
+                    return b.diff - a.diff;
+                });
 
-        // Calculate and Render Leaderboard
-        function updateLeaderboard() {
-            // Reset stats
-            const stats = {};
-            players.forEach(p => {
-                stats[p] = { name: p, wins: 0, losses: 0, pointsFor: 0, pointsAgainst: 0 };
-            });
+                // Gán cước phí
+                const feePercentages = [0, 0.10, 0.15, 0.20, 0.25, 0.30];
+                sorted = sorted.map((p, i) => ({
+                    ...p,
+                    rank: i + 1,
+                    fee: courtFee * feePercentages[i],
+                    feePercent: feePercentages[i] * 100
+                }));
 
-            // Calculate scores
-            matches.forEach(m => {
-                if (m.score1 !== "" && m.score2 !== "") {
-                    const s1 = parseInt(m.score1) || 0;
-                    const s2 = parseInt(m.score2) || 0;
-                    
-                    m.team1.forEach(p => {
-                        stats[p].pointsFor += s1;
-                        stats[p].pointsAgainst += s2;
-                        if (s1 > s2) stats[p].wins++;
-                        else if (s1 < s2) stats[p].losses++;
-                    });
-                    
-                    m.team2.forEach(p => {
-                        stats[p].pointsFor += s2;
-                        stats[p].pointsAgainst += s1;
-                        if (s2 > s1) stats[p].wins++;
-                        else if (s2 < s1) stats[p].losses++;
-                    });
-                }
-            });
+                return sorted;
+            };
 
-            // Calculate point difference and convert to array
-            const rankedPlayers = players.map(p => {
-                const s = stats[p];
-                return {
-                    ...s,
-                    pointDiff: s.pointsFor - s.pointsAgainst
-                };
-            });
+            const openReferee = (index) => {
+                const matchTemplate = templateIndices[index];
+                const initialT1Score = matchScores[index]?.t1 || 0;
+                const initialT2Score = matchScores[index]?.t2 || 0;
 
-            // Sort: Wins -> Point Diff -> Name
-            rankedPlayers.sort((a, b) => {
-                if (b.wins !== a.wins) return b.wins - a.wins;
-                if (b.pointDiff !== a.pointDiff) return b.pointDiff - a.pointDiff;
-                return a.name.localeCompare(b.name);
-            });
-
-            // Render
-            leaderboardBody.innerHTML = '';
-            rankedPlayers.forEach((player, index) => {
-                const rank = index + 1;
-                const feePercent = feePercentages[index];
-                const feeAmount = totalFee * feePercent;
+                // Trọng tài lưu Global ID thay vì lưu Tên string
+                setRef({
+                    t1: { 
+                        o1: playerMapping[matchTemplate.t1[0]], 
+                        o2: playerMapping[matchTemplate.t1[1]], 
+                        score: initialT1Score 
+                    },
+                    t2: { 
+                        o1: playerMapping[matchTemplate.t2[0]], 
+                        o2: playerMapping[matchTemplate.t2[1]], 
+                        score: initialT2Score 
+                    },
+                    servingTeam: 1,
+                    serverNum: 2,
+                    activeBox: 'o1',
+                    isStarted: false,
+                    history: []
+                });
+                setRefereeIndex(index);
                 
-                // Rank Styling
-                let rankBadge = `<span class="inline-flex items-center justify-center w-6 h-6 rounded-full bg-slate-100 text-slate-500 font-bold text-xs">${rank}</span>`;
-                if (rank === 1) rankBadge = `<span class="inline-flex items-center justify-center w-6 h-6 rounded-full bg-yellow-400 text-yellow-900 font-bold text-xs shadow">1</span>`;
-                if (rank === 2) rankBadge = `<span class="inline-flex items-center justify-center w-6 h-6 rounded-full bg-slate-300 text-slate-700 font-bold text-xs shadow">2</span>`;
-                if (rank === 3) rankBadge = `<span class="inline-flex items-center justify-center w-6 h-6 rounded-full bg-orange-300 text-orange-800 font-bold text-xs shadow">3</span>`;
+                setTimeout(() => {
+                    document.getElementById('referee-section')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }, 100);
+            };
 
-                const tr = document.createElement('tr');
-                tr.className = "hover:bg-slate-50 transition-colors";
-                tr.innerHTML = `
-                    <td class="py-3 pl-2">${rankBadge}</td>
-                    <td class="py-3 font-bold text-slate-800">${player.name}</td>
-                    <td class="py-3 text-center font-semibold text-slate-600">${player.wins} - ${player.losses}</td>
-                    <td class="py-3 text-center">
-                        <span class="font-bold ${player.pointDiff > 0 ? 'text-green-600' : player.pointDiff < 0 ? 'text-red-500' : 'text-slate-500'}">
-                            ${player.pointDiff > 0 ? '+' : ''}${player.pointDiff}
-                        </span>
-                    </td>
-                    <td class="py-3 pr-2 text-right">
-                        <div class="font-bold text-slate-800">${feeAmount === 0 && rank === 1 ? 'FREE' : feeAmount.toLocaleString('vi-VN')}</div>
-                        <div class="text-[10px] font-semibold text-slate-400">${(feePercent * 100)}%</div>
-                    </td>
-                `;
-                leaderboardBody.appendChild(tr);
-            });
+            const closeReferee = () => {
+                setMatchScores(prev => ({
+                    ...prev,
+                    [refereeIndex]: { t1: ref.t1.score, t2: ref.t2.score }
+                }));
+                setRefereeIndex(null);
+                setRef(null);
+            };
+
+            const cancelReferee = () => {
+                setRefereeIndex(null);
+                setRef(null);
+            };
+
+            const swapSetup = (team) => {
+                setRef(prev => ({
+                    ...prev,
+                    [team]: { ...prev[team], o1: prev[team].o2, o2: prev[team].o1 }
+                }));
+            };
+
+            const setFirstServe = (teamId) => {
+                setRef(prev => ({ ...prev, servingTeam: teamId }));
+            };
+
+            const startRefereeMatch = () => {
+                setRef(prev => ({ ...prev, isStarted: true }));
+            };
+
+            const saveHistory = (state) => {
+                const newHistory = [...state.history, JSON.parse(JSON.stringify(state))];
+                if (newHistory.length > 50) newHistory.shift();
+                return newHistory;
+            };
+
+            const scorePoint = () => {
+                setRef(prev => {
+                    const history = saveHistory(prev);
+                    const team = prev.servingTeam === 1 ? 't1' : 't2';
+                    return {
+                        ...prev,
+                        history,
+                        [team]: {
+                            ...prev[team],
+                            score: prev[team].score + 1,
+                            o1: prev[team].o2,
+                            o2: prev[team].o1
+                        },
+                        activeBox: prev.activeBox === 'o1' ? 'o2' : 'o1'
+                    };
+                });
+            };
+
+            const fault = () => {
+                setRef(prev => {
+                    const history = saveHistory(prev);
+                    if (prev.serverNum === 1) {
+                        return { ...prev, history, serverNum: 2, activeBox: prev.activeBox === 'o1' ? 'o2' : 'o1' };
+                    } else {
+                        return {
+                            ...prev,
+                            history,
+                            servingTeam: prev.servingTeam === 1 ? 2 : 1,
+                            serverNum: 1,
+                            activeBox: 'o1'
+                        };
+                    }
+                });
+            };
+
+            const undo = () => {
+                setRef(prev => {
+                    if (prev.history.length === 0) return prev;
+                    const prevHistory = [...prev.history];
+                    const prevState = prevHistory.pop();
+                    return { ...prevState, history: prevHistory };
+                });
+            };
+
+            const leaderboard = calculateLeaderboard();
+
+            // Hàm hỗ trợ lấy tên từ ID
+            const getPlayerName = (globalId) => players[globalId] || `Người ${globalId + 1}`;
+
+            const renderRefereeBlock = () => {
+                if (refereeIndex === null || !ref) return null;
+
+                if (!ref.isStarted) {
+                    return (
+                        <div id="referee-section" className="bg-white p-5 md:p-8 rounded-2xl shadow-sm border border-slate-200 mb-8 fade-in">
+                            <div className="flex justify-between items-center mb-6">
+                                <h2 className="text-xl md:text-2xl font-black text-slate-800 uppercase tracking-widest">
+                                    Thiết Lập Trận Đấu 🎾
+                                </h2>
+                                <button onClick={cancelReferee} className="bg-slate-100 text-slate-600 px-4 py-2 rounded-lg text-sm font-bold hover:bg-slate-200 transition-colors">
+                                    ✕ Hủy
+                                </button>
+                            </div>
+                            
+                            <div className="flex flex-col md:flex-row gap-6 w-full">
+                                <div className="flex-1 bg-slate-50 rounded-xl p-5 border-t-4 border-emerald-400">
+                                    <h2 className="text-lg font-bold mb-4 text-center text-emerald-700">Đội 1 (Trái)</h2>
+                                    <div className="space-y-4">
+                                        <div>
+                                            <label className="block text-xs font-bold text-slate-500 mb-1 uppercase">Ô 1 (Sân Phải - Dưới):</label>
+                                            <div className="w-full bg-white border border-slate-200 rounded-lg p-3 font-bold text-slate-800 shadow-sm truncate">{getPlayerName(ref.t1.o1)}</div>
+                                        </div>
+                                        <div>
+                                            <label className="block text-xs font-bold text-slate-500 mb-1 uppercase">Ô 2 (Sân Trái - Trên):</label>
+                                            <div className="w-full bg-white border border-slate-200 rounded-lg p-3 font-bold text-slate-800 shadow-sm truncate">{getPlayerName(ref.t1.o2)}</div>
+                                        </div>
+                                        <button onClick={() => swapSetup('t1')} className="w-full bg-slate-200 hover:bg-slate-300 py-2.5 rounded-lg font-bold text-sm text-slate-700 transition-colors">
+                                            ↹ Hoán đổi Ô 1 / Ô 2
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <div className="flex-1 bg-slate-50 rounded-xl p-5 border-t-4 border-blue-400">
+                                    <h2 className="text-lg font-bold mb-4 text-center text-blue-700">Đội 2 (Phải)</h2>
+                                    <div className="space-y-4">
+                                        <div>
+                                            <label className="block text-xs font-bold text-slate-500 mb-1 uppercase">Ô 1 (Sân Phải - Trên):</label>
+                                            <div className="w-full bg-white border border-slate-200 rounded-lg p-3 font-bold text-slate-800 shadow-sm truncate">{getPlayerName(ref.t2.o1)}</div>
+                                        </div>
+                                        <div>
+                                            <label className="block text-xs font-bold text-slate-500 mb-1 uppercase">Ô 2 (Sân Trái - Dưới):</label>
+                                            <div className="w-full bg-white border border-slate-200 rounded-lg p-3 font-bold text-slate-800 shadow-sm truncate">{getPlayerName(ref.t2.o2)}</div>
+                                        </div>
+                                        <button onClick={() => swapSetup('t2')} className="w-full bg-slate-200 hover:bg-slate-300 py-2.5 rounded-lg font-bold text-sm text-slate-700 transition-colors">
+                                            ↹ Hoán đổi Ô 1 / Ô 2
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div className="w-full mt-6 bg-slate-50 p-4 rounded-xl border border-slate-100 flex flex-col sm:flex-row items-center justify-between gap-4">
+                                <div className="flex items-center gap-4">
+                                    <span className="font-bold text-slate-600 uppercase">Giao Bóng Trước:</span>
+                                    <label className="flex items-center gap-2 cursor-pointer">
+                                        <input type="radio" name="serve" checked={ref.servingTeam === 1} onChange={() => setFirstServe(1)} className="w-5 h-5 accent-emerald-500" />
+                                        <span className="font-bold text-emerald-700">Đội 1</span>
+                                    </label>
+                                    <label className="flex items-center gap-2 cursor-pointer">
+                                        <input type="radio" name="serve" checked={ref.servingTeam === 2} onChange={() => setFirstServe(2)} className="w-5 h-5 accent-blue-500" />
+                                        <span className="font-bold text-blue-700">Đội 2</span>
+                                    </label>
+                                </div>
+                                <button onClick={startRefereeMatch} className="bg-emerald-500 text-white px-8 py-3 rounded-lg font-black uppercase w-full sm:w-auto shadow-md hover:bg-emerald-600 transition-colors">
+                                    Bắt Đầu 🎾
+                                </button>
+                            </div>
+                        </div>
+                    );
+                }
+
+                const t1Serving = ref.servingTeam === 1;
+                const t2Serving = ref.servingTeam === 2;
+                const activeColor = t1Serving ? 'text-emerald-600' : 'text-blue-600';
+                const activeBgT1 = t1Serving ? 'bg-emerald-50' : 'bg-white';
+                const activeBgT2 = t2Serving ? 'bg-blue-50' : 'bg-white';
+
+                return (
+                    <div id="referee-section" className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden mb-8 fade-in flex flex-col relative">
+                        <header className="relative flex items-center px-4 py-4 bg-slate-50 border-b border-slate-200 min-h-[64px]">
+                            <div className="flex gap-2 z-10">
+                                <button onClick={closeReferee} className="bg-rose-50 text-rose-600 border border-rose-200 px-3 py-1.5 rounded-lg text-xs font-bold hover:bg-rose-100 transition-colors shadow-sm">
+                                    ✕ Đóng & Lưu
+                                </button>
+                                <button onClick={undo} disabled={ref.history.length === 0} className="bg-white border border-slate-200 px-3 py-1.5 rounded-lg text-xs font-bold text-slate-600 disabled:opacity-40 hover:bg-slate-50 transition-colors shadow-sm">
+                                    ↺ Hoàn tác
+                                </button>
+                            </div>
+                            
+                            <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
+                                <span className="text-[0.65rem] font-black text-slate-400 uppercase tracking-widest leading-none mb-1">Điểm Hô</span>
+                                <div className={`text-2xl md:text-3xl font-black tracking-widest leading-none ${activeColor}`}>
+                                    {t1Serving ? ref.t1.score : ref.t2.score} - {t1Serving ? ref.t2.score : ref.t1.score} - {ref.serverNum}
+                                </div>
+                            </div>
+                        </header>
+
+                        <main className="p-3 md:p-5 flex items-stretch justify-center bg-white">
+                            <div className="flex-1 w-full max-w-5xl flex flex-row border-[4px] md:border-[6px] border-slate-300 rounded-xl overflow-hidden shadow-sm">
+                                
+                                <div className="flex-[3] flex flex-col border-r-[4px] md:border-r-[6px] border-slate-300">
+                                    <div className={`flex-1 border-b-[4px] md:border-b-[6px] border-slate-300 p-3 md:p-5 flex flex-col justify-center ${ref.activeBox === 'o2' && t1Serving ? 'bg-emerald-50' : 'bg-white'}`}>
+                                        <span className="text-[0.6rem] md:text-xs font-black text-slate-400 uppercase tracking-widest mb-1 truncate">Ô 2 (Sân Trái)</span>
+                                        <div className={`text-lg md:text-3xl font-black flex items-center gap-2 truncate ${ref.activeBox === 'o2' && t1Serving ? 'text-emerald-600' : 'text-slate-800'}`}>
+                                            {ref.activeBox === 'o2' && t1Serving && <span className="serving-ball">🎾</span>}
+                                            {getPlayerName(ref.t1.o2)}
+                                        </div>
+                                    </div>
+                                    <div className={`flex-1 p-3 md:p-5 flex flex-col justify-center ${ref.activeBox === 'o1' && t1Serving ? 'bg-emerald-50' : 'bg-white'}`}>
+                                        <span className="text-[0.6rem] md:text-xs font-black text-emerald-500 uppercase tracking-widest mb-1 truncate">Ô 1 (Sân Phải)</span>
+                                        <div className={`text-lg md:text-3xl font-black flex items-center gap-2 truncate ${ref.activeBox === 'o1' && t1Serving ? 'text-emerald-600' : 'text-slate-800'}`}>
+                                            {ref.activeBox === 'o1' && t1Serving && <span className="serving-ball">🎾</span>}
+                                            {getPlayerName(ref.t1.o1)}
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div className="flex-[2] flex flex-row border-r-[4px] md:border-r-[6px] border-slate-300 bg-slate-50">
+                                    <div className={`flex-1 border-r-[4px] md:border-r-[6px] border-slate-300 flex items-center justify-center ${activeBgT1}`}>
+                                        <span className={`text-4xl md:text-6xl font-black ${t1Serving ? 'text-emerald-600' : 'text-slate-300'}`}>{ref.t1.score}</span>
+                                    </div>
+                                    <div className={`flex-1 flex items-center justify-center ${activeBgT2}`}>
+                                        <span className={`text-4xl md:text-6xl font-black ${t2Serving ? 'text-blue-600' : 'text-slate-300'}`}>{ref.t2.score}</span>
+                                    </div>
+                                </div>
+
+                                <div className="flex-[3] flex flex-col">
+                                    <div className={`flex-1 border-b-[4px] md:border-b-[6px] border-slate-300 p-3 md:p-5 flex flex-col justify-center items-end text-right ${ref.activeBox === 'o1' && t2Serving ? 'bg-blue-50' : 'bg-white'}`}>
+                                        <span className="text-[0.6rem] md:text-xs font-black text-blue-500 uppercase tracking-widest mb-1 truncate">Ô 1 (Sân Phải)</span>
+                                        <div className={`text-lg md:text-3xl font-black flex items-center gap-2 flex-row-reverse truncate ${ref.activeBox === 'o1' && t2Serving ? 'text-blue-600' : 'text-slate-800'}`}>
+                                            {ref.activeBox === 'o1' && t2Serving && <span className="serving-ball">🎾</span>}
+                                            {getPlayerName(ref.t2.o1)}
+                                        </div>
+                                    </div>
+                                    <div className={`flex-1 p-3 md:p-5 flex flex-col justify-center items-end text-right ${ref.activeBox === 'o2' && t2Serving ? 'bg-blue-50' : 'bg-white'}`}>
+                                        <span className="text-[0.6rem] md:text-xs font-black text-slate-400 uppercase tracking-widest mb-1 truncate">Ô 2 (Sân Trái)</span>
+                                        <div className={`text-lg md:text-3xl font-black flex items-center gap-2 flex-row-reverse truncate ${ref.activeBox === 'o2' && t2Serving ? 'text-blue-600' : 'text-slate-800'}`}>
+                                            {ref.activeBox === 'o2' && t2Serving && <span className="serving-ball">🎾</span>}
+                                            {getPlayerName(ref.t2.o2)}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </main>
+
+                        <footer className="flex gap-4 p-4 bg-slate-50 border-t border-slate-200">
+                            <button onClick={fault} className="flex-[2] bg-rose-500 hover:bg-rose-600 text-white rounded-xl h-14 md:h-16 text-sm md:text-lg font-black tracking-wide uppercase shadow-sm transition-colors flex items-center justify-center gap-1">
+                                ⚡ Lỗi / Đổi Bóng
+                            </button>
+                            <button onClick={scorePoint} className="flex-[3] bg-emerald-500 hover:bg-emerald-600 text-white rounded-xl h-14 md:h-16 text-lg md:text-2xl font-black tracking-wide uppercase shadow-sm transition-colors flex items-center justify-center gap-2">
+                                ✨ +1 Điểm
+                            </button>
+                        </footer>
+                    </div>
+                );
+            };
+
+            return (
+                <div className="min-h-screen bg-slate-50 p-4 md:p-8 text-slate-800">
+                    <div className="max-w-6xl mx-auto">
+                        
+                        <div className="bg-white p-6 md:p-8 rounded-2xl shadow-sm border border-slate-200 flex flex-col gap-6 mb-8">
+                            <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4">
+                                <div>
+                                    <h1 className="text-2xl md:text-3xl font-black text-slate-800 mb-2">Trình Tạo Lịch Pickleball 🎾</h1>
+                                    <p className="text-sm md:text-base text-slate-500 font-medium">Thuật toán xếp lịch chuẩn xác 100% thỏa mãn mọi điều kiện cho 6 người</p>
+                                </div>
+                                
+                                <div className="flex gap-4 items-center flex-wrap">
+                                    <div className="bg-emerald-50 rounded-xl p-3 border border-emerald-100 flex flex-col md:flex-row md:items-center gap-1 md:gap-3">
+                                        <label className="text-[10px] md:text-[11px] font-bold text-emerald-600 uppercase tracking-wider whitespace-nowrap">💰 Tổng Tiền Sân (VNĐ)</label>
+                                        <input 
+                                            type="number" 
+                                            value={courtFee} 
+                                            onChange={(e) => setCourtFee(Number(e.target.value))}
+                                            className="w-28 bg-transparent text-emerald-800 font-black outline-none text-lg"
+                                        />
+                                    </div>
+                                    
+                                    <button onClick={handleReroll} className="w-full md:w-auto bg-slate-800 text-white px-6 py-4 rounded-xl font-bold hover:bg-slate-700 active:scale-95 transition-all shadow-sm whitespace-nowrap text-center">
+                                        🎲 Tạo Lịch Mới
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div className="border-t border-slate-100 pt-6">
+                                <label className="block text-[11px] font-bold text-slate-400 mb-3 uppercase tracking-widest">Danh Sách 6 Người Chơi (Sửa Tên Tại Đây)</label>
+                                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
+                                    {players.map((p, i) => (
+                                        <input 
+                                            key={i}
+                                            type="text"
+                                            value={p}
+                                            onChange={(e) => {
+                                                // Cập nhật tên trực tiếp vào state chung, thay đổi lập tức toàn hệ thống
+                                                const newPlayers = [...players];
+                                                newPlayers[i] = e.target.value;
+                                                setPlayers(newPlayers);
+                                            }}
+                                            placeholder={`Người ${i + 1}`}
+                                            className="w-full bg-slate-50 border border-slate-200 rounded-lg p-3 font-bold text-slate-700 text-center outline-none focus:border-emerald-400 focus:bg-white focus:ring-2 focus:ring-emerald-400/20 transition-all shadow-sm"
+                                        />
+                                    ))}
+                                </div>
+                            </div>
+                        </div>
+
+                        {renderRefereeBlock()}
+
+                        <div className="grid lg:grid-cols-3 gap-8">
+                            <div className="lg:col-span-2 space-y-4">
+                                <h2 className="text-xl font-black text-slate-800 flex items-center gap-2">
+                                    Lịch Thi Đấu (9 Trận)
+                                </h2>
+                                
+                                <div className="grid gap-3">
+                                    {templateIndices.map((match, index) => {
+                                        const s1 = matchScores[index]?.t1 ?? '';
+                                        const s2 = matchScores[index]?.t2 ?? '';
+                                        const t1Won = s1 !== '' && s2 !== '' && s1 > s2;
+                                        const t2Won = s1 !== '' && s2 !== '' && s2 > s1;
+                                        const isLive = refereeIndex === index;
+
+                                        // Hiển thị tên thông qua mapping Global ID
+                                        const t1Names = `${getPlayerName(playerMapping[match.t1[0]])} & ${getPlayerName(playerMapping[match.t1[1]])}`;
+                                        const t2Names = `${getPlayerName(playerMapping[match.t2[0]])} & ${getPlayerName(playerMapping[match.t2[1]])}`;
+
+                                        return (
+                                            <div key={index} className={`bg-white p-4 rounded-xl shadow-sm border ${isLive ? 'border-emerald-400 ring-2 ring-emerald-400/20' : 'border-slate-200'} flex flex-col sm:flex-row items-center gap-4 transition-all`}>
+                                                <div className="font-bold text-slate-400 w-8 text-center sm:text-left">#{index + 1}</div>
+                                                
+                                                <div className="flex-1 flex flex-col sm:flex-row items-center justify-between gap-4 w-full">
+                                                    <div className={`flex-1 text-center sm:text-right font-bold truncate ${t1Won ? 'text-emerald-600' : 'text-slate-700'}`}>
+                                                        {t1Names}
+                                                    </div>
+                                                    
+                                                    <div className="flex items-center gap-2 shrink-0">
+                                                        <input 
+                                                            type="number" min="0" value={s1} 
+                                                            onChange={(e) => updateScore(index, 't1', e.target.value)}
+                                                            className={`w-12 h-12 text-center font-black text-xl rounded-lg bg-slate-50 border ${t1Won ? 'border-emerald-400 text-emerald-600' : 'border-slate-200'} outline-none focus:border-emerald-400`}
+                                                        />
+                                                        <span className="text-slate-300 font-bold">-</span>
+                                                        <input 
+                                                            type="number" min="0" value={s2} 
+                                                            onChange={(e) => updateScore(index, 't2', e.target.value)}
+                                                            className={`w-12 h-12 text-center font-black text-xl rounded-lg bg-slate-50 border ${t2Won ? 'border-emerald-400 text-emerald-600' : 'border-slate-200'} outline-none focus:border-emerald-400`}
+                                                        />
+                                                        <button 
+                                                            onClick={() => openReferee(index)}
+                                                            className={`ml-2 w-12 h-12 flex items-center justify-center text-xl rounded-lg border transition-colors ${isLive ? 'bg-emerald-100 border-emerald-300' : 'bg-slate-100 hover:bg-slate-200 border-slate-200'}`}
+                                                            title="Mở Trọng Tài"
+                                                        >
+                                                            🎾
+                                                        </button>
+                                                    </div>
+
+                                                    <div className={`flex-1 text-center sm:text-left font-bold truncate ${t2Won ? 'text-emerald-600' : 'text-slate-700'}`}>
+                                                        {t2Names}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        );
+                                    })}
+                                </div>
+                            </div>
+
+                            <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 h-fit sticky top-6">
+                                <h2 className="text-xl font-black text-slate-800 mb-6 flex items-center gap-2">
+                                    📊 Bảng Xếp Hạng
+                                </h2>
+                                
+                                <div className="grid grid-cols-12 text-[10px] sm:text-xs font-bold text-slate-400 mb-3 uppercase tracking-wider px-1">
+                                    <div className="col-span-2">Hạng</div>
+                                    <div className="col-span-4">Người Chơi</div>
+                                    <div className="col-span-3 text-center">T-B (HS)</div>
+                                    <div className="col-span-3 text-right">Tiền Sân</div>
+                                </div>
+
+                                <div className="space-y-2">
+                                    {leaderboard.map((player) => (
+                                        <div key={player.id} className="grid grid-cols-12 items-center p-2 hover:bg-slate-50 rounded-lg border-b border-slate-50 last:border-0 transition-colors">
+                                            <div className="col-span-2">
+                                                <div className={`w-6 h-6 sm:w-7 sm:h-7 rounded-full flex items-center justify-center font-bold text-xs sm:text-sm
+                                                    ${player.rank === 1 ? 'bg-amber-400 text-white' : 
+                                                    player.rank === 2 ? 'bg-slate-300 text-slate-700' : 
+                                                    player.rank === 3 ? 'bg-orange-300 text-white' : 'bg-slate-100 text-slate-500'}`}>
+                                                    {player.rank}
+                                                </div>
+                                            </div>
+                                            <div className="col-span-4 font-black text-slate-700 text-sm sm:text-base truncate">{player.name}</div>
+                                            <div className="col-span-3 text-center flex flex-col">
+                                                <span className="font-bold text-xs sm:text-sm text-slate-800">{player.wins} - {player.losses}</span>
+                                                <span className={`text-[10px] font-bold ${player.diff > 0 ? 'text-emerald-500' : player.diff < 0 ? 'text-rose-500' : 'text-slate-400'}`}>
+                                                    {player.diff > 0 ? `+${player.diff}` : player.diff}
+                                                </span>
+                                            </div>
+                                            <div className="col-span-3 text-right flex flex-col">
+                                                <span className="font-black text-slate-800 text-xs sm:text-sm">
+                                                    {player.fee === 0 ? 'FREE' : player.fee.toLocaleString()}
+                                                </span>
+                                                <span className="text-[9px] sm:text-[10px] text-slate-400 font-bold">{player.feePercent}%</span>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            );
         }
 
-        // Fee Input Listener
-        totalFeeInput.addEventListener('input', (e) => {
-            totalFee = parseInt(e.target.value) || 0;
-            updateLeaderboard();
-        });
-
-        // Init
-        renderMatchesUI();
-        updateLeaderboard();
-
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
     </script>
 </body>
 </html>
