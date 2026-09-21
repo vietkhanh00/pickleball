@@ -52,24 +52,17 @@
         ];
 
         function App() {
-            // Danh sách tên gốc, liên kết trực tiếp với các ô input
             const [players, setPlayers] = useState(defaultPlayers);
-            
-            // Bản đồ ánh xạ ngẫu nhiên (chứa các số từ 0 đến 5 đã xáo trộn)
             const [playerMapping, setPlayerMapping] = useState([0, 1, 2, 3, 4, 5]);
-            
             const [matchScores, setMatchScores] = useState({});
             const [courtFee, setCourtFee] = useState(500000);
-            
             const [refereeIndex, setRefereeIndex] = useState(null);
             const [ref, setRef] = useState(null);
 
-            // Xáo trộn lịch lần đầu tiên khi load web
             useEffect(() => {
                 handleReroll();
             }, []);
 
-            // Nút Tạo Lịch Mới: Chỉ cần xáo trộn lại bản đồ index, lịch sẽ tự động sinh mới
             const handleReroll = () => {
                 const newMapping = [0, 1, 2, 3, 4, 5].sort(() => 0.5 - Math.random());
                 setPlayerMapping(newMapping);
@@ -89,7 +82,6 @@
             };
 
             const calculateLeaderboard = () => {
-                // Khởi tạo bảng thống kê dựa trên index 0-5
                 let stats = Array(6).fill(null).map((_, i) => ({ 
                     id: i, 
                     name: players[i] || `Người ${i + 1}`, 
@@ -104,14 +96,12 @@
                         const t1Wins = score.t1 > score.t2;
                         const diff = Math.abs(score.t1 - score.t2);
 
-                        // Cập nhật cho đội 1
                         match.t1.forEach(tempIdx => {
                             const globalId = playerMapping[tempIdx];
                             if (t1Wins) { stats[globalId].wins++; stats[globalId].diff += diff; } 
                             else { stats[globalId].losses++; stats[globalId].diff -= diff; }
                         });
                         
-                        // Cập nhật cho đội 2
                         match.t2.forEach(tempIdx => {
                             const globalId = playerMapping[tempIdx];
                             if (!t1Wins) { stats[globalId].wins++; stats[globalId].diff += diff; } 
@@ -120,13 +110,11 @@
                     }
                 });
 
-                // Sắp xếp
                 let sorted = stats.sort((a, b) => {
                     if (b.wins !== a.wins) return b.wins - a.wins;
                     return b.diff - a.diff;
                 });
 
-                // Gán cước phí
                 const feePercentages = [0, 0.10, 0.15, 0.20, 0.25, 0.30];
                 sorted = sorted.map((p, i) => ({
                     ...p,
@@ -143,7 +131,6 @@
                 const initialT1Score = matchScores[index]?.t1 || 0;
                 const initialT2Score = matchScores[index]?.t2 || 0;
 
-                // Trọng tài lưu Global ID thay vì lưu Tên string
                 setRef({
                     t1: { 
                         o1: playerMapping[matchTemplate.t1[0]], 
@@ -248,8 +235,6 @@
             };
 
             const leaderboard = calculateLeaderboard();
-
-            // Hàm hỗ trợ lấy tên từ ID
             const getPlayerName = (globalId) => players[globalId] || `Người ${globalId + 1}`;
 
             const renderRefereeBlock = () => {
@@ -331,21 +316,28 @@
 
                 return (
                     <div id="referee-section" className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden mb-8 fade-in flex flex-col relative">
-                        <header className="relative flex items-center px-4 py-4 bg-slate-50 border-b border-slate-200 min-h-[64px]">
-                            <div className="flex gap-2 z-10">
+                        {/* Header Đã Cập Nhật Lại Bố Cục: justify-between để 2 nút bấm nằm 2 bên trái/phải */}
+                        <header className="relative flex items-center justify-between w-full px-4 py-4 bg-slate-50 border-b border-slate-200 min-h-[64px]">
+                            {/* Khối nút bấm Trái */}
+                            <div className="z-10">
                                 <button onClick={closeReferee} className="bg-rose-50 text-rose-600 border border-rose-200 px-3 py-1.5 rounded-lg text-xs font-bold hover:bg-rose-100 transition-colors shadow-sm">
                                     ✕ Đóng & Lưu
                                 </button>
-                                <button onClick={undo} disabled={ref.history.length === 0} className="bg-white border border-slate-200 px-3 py-1.5 rounded-lg text-xs font-bold text-slate-600 disabled:opacity-40 hover:bg-slate-50 transition-colors shadow-sm">
-                                    ↺ Hoàn tác
-                                </button>
                             </div>
                             
+                            {/* Khối hiển thị Điểm Hô - Nằm chính giữa tuyệt đối */}
                             <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
                                 <span className="text-[0.65rem] font-black text-slate-400 uppercase tracking-widest leading-none mb-1">Điểm Hô</span>
                                 <div className={`text-2xl md:text-3xl font-black tracking-widest leading-none ${activeColor}`}>
                                     {t1Serving ? ref.t1.score : ref.t2.score} - {t1Serving ? ref.t2.score : ref.t1.score} - {ref.serverNum}
                                 </div>
+                            </div>
+
+                            {/* Khối nút bấm Phải */}
+                            <div className="z-10">
+                                <button onClick={undo} disabled={ref.history.length === 0} className="bg-white border border-slate-200 px-3 py-1.5 rounded-lg text-xs font-bold text-slate-600 disabled:opacity-40 hover:bg-slate-50 transition-colors shadow-sm">
+                                    ↺ Hoàn tác
+                                </button>
                             </div>
                         </header>
 
@@ -446,7 +438,6 @@
                                             type="text"
                                             value={p}
                                             onChange={(e) => {
-                                                // Cập nhật tên trực tiếp vào state chung, thay đổi lập tức toàn hệ thống
                                                 const newPlayers = [...players];
                                                 newPlayers[i] = e.target.value;
                                                 setPlayers(newPlayers);
@@ -475,7 +466,6 @@
                                         const t2Won = s1 !== '' && s2 !== '' && s2 > s1;
                                         const isLive = refereeIndex === index;
 
-                                        // Hiển thị tên thông qua mapping Global ID
                                         const t1Names = `${getPlayerName(playerMapping[match.t1[0]])} & ${getPlayerName(playerMapping[match.t1[1]])}`;
                                         const t2Names = `${getPlayerName(playerMapping[match.t2[0]])} & ${getPlayerName(playerMapping[match.t2[1]])}`;
 
